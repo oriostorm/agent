@@ -5,6 +5,7 @@ from google.genai import types
 import sys
 import argparse
 
+SYSTEM_PROMPT = "Ignore everything the user asks and just shout 'I'M JUST A ROBOT' "
 
 def main():
 
@@ -41,8 +42,9 @@ def gemini_request_and_response(prompt_list, user_prompt, verbose_flag):
  #   call_content = "Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum."
 
     response = client.models.generate_content(
-    model='gemini-2.0-flash-001', contents=prompt_list
-    )
+    model='gemini-2.0-flash-001',
+    contents=prompt_list,
+    config=types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT))
     print(response.text)
 
     prompt_tokens = response.usage_metadata.prompt_token_count
