@@ -15,6 +15,8 @@ from functions.write_file import write_file
 
 WORKING_DIR = "./calculator"
 
+AGENT_ITERATIONS = 5
+
 SYSTEM_PROMPT = """
 You are a helpful AI coding agent.
 
@@ -69,28 +71,51 @@ def gemini_request_and_response(prompt_list, user_prompt, verbose_flag):
         schema_write_file
     ]
 )
-    response = client.models.generate_content(
-    model='gemini-2.0-flash-001',
-    contents=prompt_list,
-    config=types.GenerateContentConfig(
-    tools=[available_functions], system_instruction=SYSTEM_PROMPT
-    ))
+    
+#loop starts
+    for i in range(AGENT_ITERATIONS):
 
-    if response.function_calls:
-        for function_call in response.function_calls:
-            function_name = function_call.name
-            function_args = function_call.args
-            print(function_args)
-            print(f"Calling function: {function_name}({function_args})")
-            function_call = types.FunctionCall(name=function_name, args=function_args)
-            function_call_result = call_function(function_call, verbose_flag)
+        try:
+            print(f"iteration {i}: {prompt_list}")
 
-            if not function_call_result.parts[0].function_response.response:
-                raise ValueError("Big problem with function call!!!")
-            if verbose_flag:
-                print(f"-> {function_call_result.parts[0].function_response.response}")
+            response = client.models.generate_content(
+            model='gemini-2.0-flash-001',
+            contents=prompt_list,
+            config=types.GenerateContentConfig(
+            tools=[available_functions], system_instruction=SYSTEM_PROMPT
+            ))
+
+            for candidate in response.candidates:
+                prompt_list.append(candidate.content)
+
+            if response.function_calls:
+                for function_call in response.function_calls:
+                    function_name = function_call.name
+                    function_args = function_call.args
+                    print(function_args)
+                    print(f"Calling function: {function_name}({function_args})")
+                    function_call = types.FunctionCall(name=function_name, args=function_args)
+                    function_call_result = call_function(function_call, verbose_flag)
+                    prompt_list.append(function_call_result)
+
+                    if not function_call_result.parts[0].function_response.response:
+                        raise ValueError("Big problem with function call!!!")
+                    
+                    
+                    if verbose_flag:
+                        print(f"-> {function_call_result.parts[0].function_response.response}")
+                    else:
+                        print("successful but I didn't want to be verbose")
+
+            if response.text:
+                print(response.text)
             else:
-                print("successful but I didn't want to be verbose")
+                print("I am still running")
+
+        except Exception as e:
+            print(f"An Error occurred with my agent: {e}")
+
+#loop ends
 
     prompt_tokens = response.usage_metadata.prompt_token_count
     response_tokens = response.usage_metadata.candidates_token_count
@@ -139,7 +164,7 @@ def call_function(function_call_part, verbose=False):
             response={"result": function_result},
         )
     ],
-)
+    )
 
 main()
 

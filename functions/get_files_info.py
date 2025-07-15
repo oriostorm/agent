@@ -18,6 +18,8 @@ schema_get_files_info = types.FunctionDeclaration(
 
 def get_files_info(working_directory, directory=None):
 
+    if not directory:
+        directory = "."
     # Join and normalize
     full_path = os.path.abspath(os.path.join(working_directory, directory))
     #print(full_path)
