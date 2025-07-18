@@ -30,33 +30,37 @@ def run_python_file(working_directory, file_path):
     # Check: is full_path inside working_directory?
 
     #print(full_path)
+    function_output = ""
+
     if os.path.commonpath([working_directory, full_path]) != working_directory:
-        print(f'Error: Cannot execute "{file_path}" as it is outside the permitted working directory')
-        return
+        function_output = f'Error: Cannot execute "{file_path}" as it is outside the permitted working directory'
+        return function_output
 
     if not os.path.exists(full_path):
-        print(f'Error: File "{file_path}" not found.')
+        function_output = f'Error: File "{file_path}" not found.'
         #print(full_path)
-        return
+        return function_output
 
     root, extension = os.path.splitext(file_path)
     if extension.lower() != FILE_TYPE:
-        print(f'Error: "{file_path}" is not a Python file.')
-        return
+        function_output = f'Error: "{file_path}" is not a Python file.'
+        return function_output
 
     try:
         result = subprocess.run(["python3", file_path], text = True, capture_output=True, timeout=30, cwd=working_directory)
     except Exception as e:
-        print(f"Error: executing Python file: {e}")
-        return
+        function_output = f"Error: executing Python file: {e}"
+        return function_output
     
     if result.stdout:
-        print(f"STDOUT:", result.stdout)
+        function_output = f"STDOUT:", result.stdout
     if result.stderr:
-        print(f"STDERR:", result.stderr)
+        function_output = f"STDERR:", result.stderr
     if result.returncode != 0:
-        print(f"Process returned with code", result.returncode)
+        function_output = f"Process returned with code", result.returncode
     if not result.stdout and result.returncode == 0:
-        print("No output produced")
+        function_output = "No output produced"
+
+    return function_output
 
 # run_python_file("calculator", "sub_test.py")

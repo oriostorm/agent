@@ -19,6 +19,8 @@ schema_get_file_content = types.FunctionDeclaration(
 
 def get_file_content(working_directory, file_path):
 
+    #creat blank list
+    full_func_string = []
         # Join and normalize
     full_path = os.path.abspath(os.path.join(working_directory, file_path))
     # print(full_path)
@@ -28,13 +30,17 @@ def get_file_content(working_directory, file_path):
 
     # Check: is full_path inside working_directory?
     if os.path.commonpath([working_directory, full_path]) != working_directory:
-        print(f'Error: Cannot access "{file_path}" as it is outside the permitted working directory')
-        return
+        print_value = f'Error: Cannot access "{file_path}" as it is outside the permitted working directory'
+        print(print_value)
+        return print_value
     
     if os.path.isfile(full_path):
         with open(full_path, "r") as f:
             file_content_string = f.read(MAX_CHARS)
+            return file_content_string
         print(file_content_string)
         if len(file_content_string) == MAX_CHARS:
-            print(f"[...File {file_path} truncated at 10000 characters]")
+            print_value = f"[...File {file_path} truncated at 10000 characters]"
+            print(print_value)
+            return print_value
 

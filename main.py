@@ -15,7 +15,7 @@ from functions.write_file import write_file
 
 WORKING_DIR = "./calculator"
 
-AGENT_ITERATIONS = 5
+AGENT_ITERATIONS = 20
 
 SYSTEM_PROMPT = """
 You are a helpful AI coding agent.
@@ -76,7 +76,7 @@ def gemini_request_and_response(prompt_list, user_prompt, verbose_flag):
     for i in range(AGENT_ITERATIONS):
 
         try:
-            print(f"iteration {i}: {prompt_list}")
+            # print(f"iteration {i}: {prompt_list}")
 
             response = client.models.generate_content(
             model='gemini-2.0-flash-001',
@@ -92,7 +92,7 @@ def gemini_request_and_response(prompt_list, user_prompt, verbose_flag):
                 for function_call in response.function_calls:
                     function_name = function_call.name
                     function_args = function_call.args
-                    print(function_args)
+                    #print(function_args)
                     print(f"Calling function: {function_name}({function_args})")
                     function_call = types.FunctionCall(name=function_name, args=function_args)
                     function_call_result = call_function(function_call, verbose_flag)
@@ -107,24 +107,27 @@ def gemini_request_and_response(prompt_list, user_prompt, verbose_flag):
                     else:
                         print("successful but I didn't want to be verbose")
 
-            if response.text:
-                print(response.text)
+            elif response.text:
+                print(f"\n \n {response.text}")
+
+                prompt_tokens = response.usage_metadata.prompt_token_count
+                response_tokens = response.usage_metadata.candidates_token_count
+
+                if verbose_flag:
+                    print(f"User prompt: {user_prompt}")
+                    print(f"Prompt tokens: {prompt_tokens}")
+                    print(f"Response tokens: {response_tokens}")
+                break
             else:
                 print("I am still running")
+            # should_i_continue = input("Shall I give it another go? y/n ")
+            # if should_i_continue == "n":
+            #     break
 
         except Exception as e:
             print(f"An Error occurred with my agent: {e}")
 
 #loop ends
-
-    prompt_tokens = response.usage_metadata.prompt_token_count
-    response_tokens = response.usage_metadata.candidates_token_count
-
-    if verbose_flag:
-        print(f"User prompt: {user_prompt}")
-        print(f"Prompt tokens: {prompt_tokens}")
-        print(f"Response tokens: {response_tokens}")
-
 
 def call_function(function_call_part, verbose=False):
 
@@ -134,16 +137,16 @@ def call_function(function_call_part, verbose=False):
         print(f" - Calling function: {function_call_part.name}")
 
     if function_call_part.name == "get_file_content" :
-        print("get_file_content")
+        # print("get_file_content")
         function_result = get_file_content(WORKING_DIR, **function_call_part.args)
     elif function_call_part.name == "get_files_info" :
-        print("get_files_info")
+        # print("get_files_info")
         function_result = get_files_info(WORKING_DIR, **function_call_part.args)
     elif function_call_part.name == "run_python_file" :
         function_result = run_python_file(WORKING_DIR, **function_call_part.args)
-        print("run_python_file")
+        # print("run_python_file")
     elif function_call_part.name == "write_file" :
-        print("write_file") 
+        # print("write_file") 
         function_result = write_file(WORKING_DIR, **function_call_part.args)
     else:
         return types.Content(

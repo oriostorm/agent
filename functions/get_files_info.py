@@ -29,15 +29,23 @@ def get_files_info(working_directory, directory=None):
 
     # Check: is full_path inside working_directory?
     if os.path.commonpath([working_directory, full_path]) != working_directory:
-        print(f'Error: Cannot list "{directory}" as it is outside the permitted working directory')
-        return
+        print_value = f'Error: Cannot list "{directory}" as it is outside the permitted working directory'
+        print(print_value)
+        return print_value
 
     if not os.path.isdir(full_path):
-        f'Error: "{directory}" is not a directory'
+        print_value = f'Error: "{directory}" is not a directory'
+        print(print_value)
+        return print_value
     else:
         dir_list = os.listdir(full_path)
 
+        full_func_string = []
         for item in dir_list:
             file_size = os.path.getsize(os.path.join(full_path,item))
             is_dir = os.path.isdir(os.path.join(full_path,item))
-            print(f"- {item}: file_size={file_size} bytes and is_dir={is_dir}")
+            print_value = f"- {item}: file_size={file_size} bytes and is_dir={is_dir}"
+            full_func_string.append(print_value)
+            print(print_value)
+        
+        return full_func_string
